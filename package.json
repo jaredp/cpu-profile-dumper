@@ -1,0 +1,20 @@
+{
+  "name": "cpu-profile-dumper",
+  "version": "0.1.0",
+  "description": "Dump CPU profiles to the console",
+  "main": "index.js",
+  "dependencies": {
+    "bluebird": "^2.9.30",
+    "colors": "^1.1.2",
+    "cpu-profiler": "^2.1.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": {
+    "name": "Jared Pochtar",
+    "email": "jpochtar@gmail.com"
+  },
+  "license": "MIT"
+}
