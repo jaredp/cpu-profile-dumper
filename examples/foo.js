@@ -29,7 +29,7 @@ function main() {
     heavywork();
 }
 
-profiler.dumpAsyncFn(function(done) {
+profiler.profileAsync(function(done) {
     main();
     setTimeout(function() {
         main();

@@ -31,16 +31,6 @@ function printProfile(profile, depth) {
     }
 }
 
-function findFnFrame(profile, fname) {
-    if (profile.functionName === fname) {
-        return profile;
-    } else if (profile.childrenCount > 0) {
-        return findFnFrame(profile.getChild(0), fname);
-    } else {
-        return null;
-    }
-}
-
 function prettyPrintUserCode(profile) {
     // heuristic guess that only node.js internals don't have / in paths
     var isNodeInternals = profile.scriptName.indexOf('/') === -1;
@@ -56,37 +46,40 @@ function prettyPrintUserCode(profile) {
     }
 }
 
-var dump = exports.dump = function(fn) {
+var startProfiling = exports.startProfiling = function() {
+    profiler.startProfiling('flamechart');
+};
+
+var finishProfiling = exports.finishProfiling = function() {
     var retval, profile, tree;
 
-    profiler.startProfiling('flamechart');
-    res = Promise.try(fn);
-    res.finally(function() {
-        // get the profile
-        profile = profiler.stopProfiling('flamechart');
+    // get the profile
+    profile = profiler.stopProfiling('flamechart');
 
-        // get the tree
-        tree = profile.topRoot;
+    // get the tree
+    tree = profile.topRoot;
 
-        // narrow it to the part we're interested in
-        tree = findFnFrame(tree, '__flamechart_main_fn') || tree;
+    // pretty print it
+    prettyPrintUserCode(tree);
 
-        // pretty print it
-        prettyPrintUserCode(tree);
+    // clean up after ourselves
+    profile.delete();
+};
 
-        // clean up after ourselves
-        profile.delete();
+exports.profilePromise = function(fn) {
+    var p = Promise.try(function(){
+        startProfiling();
+        return fn();
     });
 
-    return res;
-}
-
-exports.dumpAsyncFn = function(fn) {
-    dump(function() {
-        return new Promise(function(resolve, reject) {
-            setTimeout(function() {
-                fn(resolve);
-            });
-        });
+    p.finally(function() {
+        finishProfiling();
     });
-}
+
+    return p;
+};
+
+exports.profileAsync = function(fn) {
+    startProfiling();
+    return fn(finishProfiling);
+};
