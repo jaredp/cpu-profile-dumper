@@ -29,11 +29,11 @@ function main() {
     heavywork();
 }
 
-profiler.profileAsync(function(done) {
+profiler.startProfiling()
+
+main();
+setTimeout(function() {
     main();
-    setTimeout(function() {
-        main();
-        console.log("this should only happen once", sum);
-        done();
-    });
+    console.log("this should only happen once", sum);
+    profiler.finishAndMakeFlamegraph('flamechart.html');
 });
